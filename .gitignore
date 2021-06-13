@@ -1,1 +1,3 @@
 /.idea/
+/debian10/packer_cache/
+/debian10/.proxmox-variables.json
