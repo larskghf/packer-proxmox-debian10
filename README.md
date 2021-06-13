@@ -1,0 +1,1 @@
+`packer build -var-file example-variables.json debian-10-buster.json`
