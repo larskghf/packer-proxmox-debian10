@@ -1,0 +1,63 @@
+{
+  "variables": {
+    "proxmox_host": null,
+    "proxmox_node": null,
+    "proxmox_api_user": null,
+    "proxmox_api_password": null
+  },
+  "sensitive-variables": [
+    "proxmox_api_password"
+  ],
+  "builders": [
+    {
+      "type": "proxmox-iso",
+      "proxmox_url": "https://{{ user `proxmox_host` }}/api2/json",
+      "insecure_skip_tls_verify": true,
+      "node": "{{user `proxmox_node`}}",
+      "username": "{{ user `proxmox_api_user` }}",
+      "password": "{{ user `proxmox_api_password` }}",
+      "template_description": "Debian 10 template. Built on {{ isotime \"2006-01-02T15:04:05Z\" }}",
+      "network_adapters": [
+        {
+          "model": "virtio",
+          "bridge": "vmbr0",
+          "firewall": false
+        }
+      ],
+      "disks": [
+        {
+          "type": "scsi",
+          "disk_size": "10G",
+          "storage_pool": "local-zfs",
+          "storage_pool_type": "ZFS",
+          "format": "raw"
+        }
+      ],
+      "scsi_controller": "virtio-scsi-single",
+      "http_directory": "./",
+      "boot_wait": "10s",
+      "boot_command": [
+        "<esc><wait>auto url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg<enter>"
+      ],
+      "iso_file": "local:iso/debian-10.9.0-amd64-netinst.iso",
+      "unmount_iso": true,
+      "cloud_init": false,
+      "cloud_init_storage_pool": "local",
+      "vm_name": "debian-10.9.0",
+      "vm_id": 900,
+      "memory": "1024",
+      "cpu_type": "host",
+      "sockets": "1",
+      "cores": "1",
+      "os": "l26",
+      "ssh_username": "root",
+      "ssh_password": "packer"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "ansible",
+      "playbook_file": "./ansible/template-server-config.yaml"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+    "proxmox_host": "pve.domain.local:8006",
+    "proxmox_node": "pve",
+    "proxmox_api_user": "root@pam",
+    "proxmox_api_password": "Pa$$w0rd"
+}
