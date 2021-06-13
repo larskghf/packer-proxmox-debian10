@@ -1,0 +1,96 @@
+---
+- name: Server config for Templates
+  hosts: default
+  remote_user: root
+
+  tasks:
+  - name: Create a default user
+    user:
+      name: debian
+      password: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
+      groups: cdrom, floppy, audio, dip, video, plugdev, netdev, sudo
+      state: present
+      shell: /bin/bash       # Defaults to /bin/bash
+      system: no             # Defaults to no
+      createhome: yes        # Defaults to yes
+      home: /home/debian  # Defaults to /home/<username>
+
+  - name: Set up authorized keys for user debian
+    authorized_key:
+      user: debian
+      state: present
+      key: '{{ item }}'
+    loop:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCrhmeJr82a6Wn1DqORS6igVdrRQgm53Jo72ROc5h5Dpf/WNiKmKp8ZR+pYG2bjstbT5ZBelfahz96k6CbNwb+2Y644ytS4wREB4uyMB2+1J9oXOESzbpnauu2kKKOEWRHIYL5fE7FiVEcIofdeGLiDPrnMUBb4TXyuxpRoYjj0fWnkRj3zVG1gRYXo4GW7Dehm/G3igBOLmeoIeIIbIRavi1q5d+5hzrLB8mynufL7x90UXyp2+1eLkmxoVRQFfZA+YYFVCINVCr+KvYT4OjSnHlNK8iTDo5eJrX6biO7ejSzN5NSyAoFRW3bkO6vxfu2RC3JOSe2gVEKQgE2YT5+JaxBl9tbE8e2xskRGcl0rRc7iSbUEtmXTyioVreXlbocIyohOTNm7SQP5Q0mv5nJYxSUIbLIAqKZglsdpmbnavMKTYg+vGC2eDKEQ92G9qu4VxX4e27kMEz1j8bPCn/EPTidSEP4/WxpCdhNtEAHH1GxCrrCo3XyhCn3oEcyvTvg7OXspZeBbZkO7Wppg3+N3MLyrYmemDgUIsSz/f2lEoY3+0QrYcSG480wjolwFPxseUKEqzumpU65/VkURB1UECsQDYUy9f9HYKYIYGZDFOFqZLS5pvwMsB/6iHGv/i1jkIRPrnrAJ0MbQIdHaggYuBawJi08/q/HMkF5snY/58w== lars@kghf.io
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC+8HwSDjjDNPPWdgIsoA80xf2s2QxSyiJ41OcncT6opukvBpGMO+bRDzYTs3ib0fRWBYdG8A8fSdkdPnSBqrmTevczTphCvGwxgIqnz1wEdZZgv5WbmQFoIVFntSq8H520gI8aYi7SZlBrDl344nlGhV0mQJeam5gCq10PCAxARz6GcKonGl6mhuKm8EdJya5qgcQ/W1rlWfakMOAMrUhGwRisDjILrlr0tp4337U4kzKdMjWpYue+Qyv5gOgowUQ4NYKaKiOOQmJuma/3hMRasQPWccXBER9wiZNRdYzm7+8blva/zMJHMh2pwoAzkXo1SQiGBsDIS5eDl9tG73Qoj6Wbc4unqta7wbKY6JdFDkHCvdi/wxjRGYkU79j9kfZPUROGumgFz5cvCRPrjIYFBYMdfc6CwgkDjfmFCH42O156ZalJZAPevhNiKMGG3VBbTibL37QxBs0JqkKLzySZ0p93/f53BvggV2LFuS27rQxSGC1pqVmd01nlIt/e5hpqaA9Uo4a+QeNyS3LhQXE7Cr7GpZp+6hq37yvMaYsIoNs4ZvM5lIIaqky3WTVQUN8uH7K2ZN9dEt9m242rwjMlECWIPg6KpqhXazZO3kla3gYayg07ox3QxoHBc285Zk12dvFEQM3fz1Q3ag+Zw9m0/w/VpmdlGVOHViRqnymlSw== ci@kghf.io
+
+  - name: Set sudoers config for group sudo
+    lineinfile:
+      dest: /etc/sudoers
+      state: present
+      regexp: '^%sudo'
+      line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+      validate: 'visudo -cf %s'
+
+  - name: Change root password
+    user:
+      name: root
+      password: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
+      update_password: always
+
+  - name: Copy kghf-local ca certificate
+    copy:
+      src: kghf-local.crt
+      dest: /usr/local/share/ca-certificates/kghf-local.crt
+      owner: root
+      group: root
+      mode: '0755'
+    register: kghfLocalCACertificate
+
+  - name: Update ca-certificates
+    shell: update-ca-certificates
+    when: kghfLocalCACertificate.changed
+
+  - name: Copy script to generate ssh host keys at first boot
+    copy:
+      src: regenerate_ssh_host_keys.service
+      dest: /etc/systemd/system/regenerate_ssh_host_keys.service
+      owner: root
+      group: root
+      mode: '0644'
+    register: regenerateSSHHostKeysService
+
+  - name: Systemctl daemon-reload and enable service
+    shell: |
+      systemctl daemon-reload
+      systemctl enable regenerate_ssh_host_keys.service
+    when: regenerateSSHHostKeysService.changed
+
+  - name: Cleanup machine-id
+    shell: |
+      echo "=> Cleanup machine-id"
+      truncate -s 0 /etc/machine-id
+      rm /var/lib/dbus/machine-id
+      ln -s /etc/machine-id /var/lib/dbus/machine-id
+
+  - name: Cleanup ssh host keys
+    shell: |
+      echo "=> Cleanup ssh host keys"
+      rm -f /etc/ssh/ssh_host_*
+
+  - name: Cleanup apt cache, logs and bash history
+    shell: |
+      echo "=> Clean up apt cache..."
+      find /var/cache/apt/archives -type f -exec rm -vf \{\} \;
+      echo "=> Cleaning up /var/log..."
+      find /var/log -type f -name "*.gz" -exec rm -vf \{\} \;
+      find /var/log -type f -name "*.1" -exec rm -vf \{\} \;
+      find /var/log -type f -exec truncate -s0 \{\} \;
+      echo "Clearing bash history..."
+      cat /dev/null > /root/.bash_history
+
+  - name: Compacting drive
+    shell: |
+      echo "=> Compacting drive..."
+      dd if=/dev/zero of=EMPTY bs=1M > /dev/null
+      rm -vf /root/EMPTY
