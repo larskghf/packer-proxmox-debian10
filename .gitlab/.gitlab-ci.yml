@@ -1,0 +1,16 @@
+stages:
+  - build
+
+build:debian10:
+  stage: build
+  image: hashicorp/packer:1.7.2
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+  tags:
+    - linux
+  variables:
+    PROXMOX_HOST: pve.kghf.local:8006
+    PROXMOX_NODE: pve
+    PROXMOX_API_USER: root@pam
+  script:
+    - packer build -var proxmox_host=$PROXMOX_HOST -var proxmox_node=$PROXMOX_NODE -var proxmox_api_user=$PROXMOX_API_USER -var proxmox_api_password=$PROXMOX_API_PASSWORD debian-10-buster.json
