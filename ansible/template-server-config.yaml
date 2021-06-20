@@ -66,6 +66,23 @@
       systemctl enable regenerate_ssh_host_keys.service
     when: regenerateSSHHostKeysService.changed
 
+  - name: Disable quiet boot mode
+    lineinfile:
+      path: /etc/default/grub
+      regexp: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet"'
+      line: 'GRUB_CMDLINE_LINUX_DEFAULT=""'
+      state: present
+
+  - name: Update grub2 config
+    shell: update-grub2
+
+  - name: Disable root SSH login
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: "^PermitRootLogin"
+      line: "PermitRootLogin no"
+      state: present
+
   - name: Cleanup machine-id
     shell: |
       echo "=> Cleanup machine-id"
@@ -81,7 +98,10 @@
   - name: Cleanup apt cache, logs and bash history
     shell: |
       echo "=> Clean up apt cache..."
-      find /var/cache/apt/archives -type f -exec rm -vf \{\} \;
+      apt-get clean
+      apt-get autoremove
+      rm -Rf /var/lib/apt/lists/*
+      rm -Rf /var/cache/apt
       echo "=> Cleaning up /var/log..."
       find /var/log -type f -name "*.gz" -exec rm -vf \{\} \;
       find /var/log -type f -name "*.1" -exec rm -vf \{\} \;
