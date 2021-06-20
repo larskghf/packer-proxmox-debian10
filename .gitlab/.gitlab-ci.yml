@@ -3,7 +3,7 @@ stages:
 
 build:debian10:
   stage: build
-  image: hashicorp/packer:1.7.2-full
+  image: hashicorp/packer:full-1.7.3
   rules:
     - if: '$CI_COMMIT_BRANCH == "master"'
   tags:
