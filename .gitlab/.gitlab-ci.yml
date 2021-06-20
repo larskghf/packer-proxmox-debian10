@@ -3,7 +3,7 @@ stages:
 
 build:debian10:
   stage: build
-  image: hashicorp/packer:1.7.3
+  image: kghf/gitlab-build-image:latest
   rules:
     - if: '$CI_COMMIT_BRANCH == "master"'
   tags:
