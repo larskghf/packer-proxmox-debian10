@@ -14,7 +14,4 @@ build:debian10:
     PROXMOX_NODE: pve
     PROXMOX_API_USER: root@pam
   script:
-    - echo test
-#    - packer --version
-#    - packer build -var test=test
-#    - packer build -var proxmox_host=$PROXMOX_HOST -var proxmox_node=$PROXMOX_NODE -var proxmox_api_user=$PROXMOX_API_USER -var proxmox_api_password=$PROXMOX_API_PASSWORD debian-10-buster.json
+    - packer build -var proxmox_host=$PROXMOX_HOST -var proxmox_node=$PROXMOX_NODE -var proxmox_api_user=$PROXMOX_API_USER -var proxmox_api_password=$PROXMOX_API_PASSWORD debian-10-buster.json
