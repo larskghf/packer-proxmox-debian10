@@ -7,7 +7,8 @@ build:debian10:
   rules:
     - if: '$CI_COMMIT_BRANCH == "master"'
   tags:
-    - linux
+    - homelab
+    - docker
   variables:
     PROXMOX_HOST: pve.kghf.local:8006
     PROXMOX_NODE: pve
