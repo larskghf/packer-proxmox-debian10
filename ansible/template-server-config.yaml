@@ -35,7 +35,7 @@
   - name: Change root password
     user:
       name: root
-      password: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
+      password: "$6$nlF5yGdUAUYj3Ayc$sLssUIfSZ8ZgdKBYrFVW0Fydy8HgXX1itChejY6F0WaGYF4zwGWao1ANQ44E3rHQgHk18C1wky/wETrTG6XLO/"
       update_password: always
 
   - name: Copy kghf-local ca certificate
