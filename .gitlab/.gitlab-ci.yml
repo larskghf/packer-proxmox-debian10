@@ -1,0 +1,16 @@
+stages:
+  - packer
+
+build:
+  stage: packer
+  tags:
+    - homelab
+    - shell
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+  variables:
+    PROXMOX_HOST: pve.kghf.local:8006
+    PROXMOX_NODE: pve
+    PROXMOX_USER: root@pam
+  script:
+    - packer build -var proxmox_host=${PROXMOX_HOST} -var proxmox_node=${PROXMOX_NODE} -var proxmox_api_user=${PROXMOX_USER} -var proxmox_api_password=${PROXMOX_PASSWORD} debian-10-buster.json
