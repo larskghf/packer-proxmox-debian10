@@ -76,6 +76,13 @@
   - name: Update grub2 config
     shell: update-grub2
 
+  - name: Configure kernel message on console
+    lineinfile:
+      path: /etc/sysctl.conf
+      regexp: '#kernel.printk = 3 4 1 3'
+      line: 'kernel.printk = 3 4 1 3'
+      state: present
+
   - name: Disable root SSH login
     lineinfile:
       path: /etc/ssh/sshd_config
