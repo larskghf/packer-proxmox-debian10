@@ -1,7 +1,7 @@
 stages:
   - packer
 
-build:
+packer:template:
   stage: packer
   tags:
     - homelab
