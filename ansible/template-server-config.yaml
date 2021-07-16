@@ -7,7 +7,7 @@
   - name: Create a default user
     user:
       name: debian
-      password: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
+      password: "$6$tTv70D8rntvToR8B$15USpjMB1JETxs0JKueMAHQGAZdLeIDiaGH08EBPfJcwnWVIkrdACBZVIRR5G0ELFy7AiZNJbi0E09Zh81jfi."
       groups: cdrom, floppy, audio, dip, video, plugdev, netdev, sudo
       state: present
       shell: /bin/bash       # Defaults to /bin/bash
@@ -35,7 +35,7 @@
   - name: Change root password
     user:
       name: root
-      password: "$6$nlF5yGdUAUYj3Ayc$sLssUIfSZ8ZgdKBYrFVW0Fydy8HgXX1itChejY6F0WaGYF4zwGWao1ANQ44E3rHQgHk18C1wky/wETrTG6XLO/"
+      password: "$6$Lz/I9bpGKS.J9YoZ$XiJBr6LkOutHiEzWsYhcefXPxW1mZNhheOJsUDgdXZML4zybh1ZmArjArdpFITEwAjYB5sAS.kexNlndxHd..0"
       update_password: always
 
   - name: Copy kghf-local ca certificate
